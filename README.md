@@ -1,6 +1,6 @@
 # Career Projection
 
-**Can a model project an NBA player's whole career after his first season and a half, and say *how* he plays, not just how good he'll be?**
+**Can a model project an NBA player's whole career after his rookie season, and say *how* he plays, not just how good he'll be?**
 
 Work in progress. The showcase player is **Cooper Flagg** (#1 pick, 2025), but the
 model is built and validated on hundreds of careers; Flagg is the case study.
@@ -63,7 +63,7 @@ validated.
 - **Career simulation:** Monte Carlo careers (improvement, injuries, decline,
   attrition) to get probabilities instead of one line.
 - **Backtests on famous players:** what the model would have said about LeBron,
-  Wiggins, Zion, Luka, Edwards after their first season and a half.
+  Wiggins, Zion, Luka, Edwards after their rookie season.
 
 ## Rules of the game
 

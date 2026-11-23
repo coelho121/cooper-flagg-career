@@ -8,7 +8,7 @@
 - **Every project ends in a YouTube video.** Keep that in mind when choosing analyses and figures: strong hooks, visuals that read on screen, stories about real players. Never at the cost of honesty.
 
 ## The project
-**Question:** after his first season and a half, can we project Cooper Flagg's whole NBA career, year by year, and describe *how* he plays?
+**Question:** after his rookie season, can we project Cooper Flagg's whole NBA career, year by year, and describe *how* he plays?
 
 Read `README.md` (idea, two-layer design, data plan) and `notes.md` (decisions and history) at the start of every session.
 

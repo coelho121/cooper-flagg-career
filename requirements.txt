@@ -7,3 +7,4 @@ scipy
 requests
 nba_api
 ipykernel
+pyarrow
