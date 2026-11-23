@@ -9,6 +9,7 @@
 - `src/download_bref.py`: downloads all 20 files of the Kaggle Basketball-Reference mirror to `data/raw/bref/`, file by file, with caching, retries and backoff.
 - Validated against known values: LeBron 2008-09 BPM 13.2, VORP 11.8 (exact match, same check as rookie-projection).
 - `src/build_seasons.py` → `data/processed/player_seasons.parquet`: 27,452 player-seasons × 117 columns (totals, advanced, shooting, play-by-play, experience, awards, draft, career info). Checks: row count equals unique player-seasons in the raw totals; exactly 1 MVP per season; 5 first-team All-NBA per season since 1990; Harden 2020-21 is one row (HOU/BRK).
+- Added Flagg's 2025-26 awards by hand (ROY share 0.824, All-Rookie 1st team) and `main.py`, which runs the pipeline end to end.
 
 ## Decisions
 
@@ -27,6 +28,9 @@
 - Players drafted more than once (158, older eras) keep their latest selection.
 - Processed data saved as parquet (keeps dtypes: dates, booleans, nullable ints). Added `pyarrow`.
 - `in_progress` flag on season 2027: never a training target.
+- **ROY as a candidate feature.** It is announced at the end of the rookie season, so it is known at the as-of date (no leakage). Use the vote share (`roy_share`), not just the winner: one winner a year (~45 since 1980) is too sparse, while shares cover the top 5-10 rookies. Whether it adds information beyond the rookie stats (it mostly reflects them) gets tested in the backtests with and without it.
+- **Manual award patches** (`MANUAL_AWARDS` in `build_seasons.py`): the mirror lacks the 2025-26 awards. Flagg's ROY (56 first-place + 44 second-place votes = 412 of 500 points, 5-3-1 scoring → share 0.824) and All-Rookie 1st team were entered by hand from the NBA's official release and Bleacher Report. A patch never overwrites the mirror and is skipped once the mirror has the award. Only Flagg is patched: other 2025-26 rookies have no finished careers, so they don't enter training.
+- **Pipeline instead of notebooks for logic.** All logic in `src/` modules with a `main()`, `main.py` runs everything end to end, notebooks only explore and present (importing from `src/`). Reason: notebooks have hidden state (cells run out of order), give noisy Git diffs and can't be run as one reproducible command. With "clone the repo, run `python main.py`, get every result", anyone can check the work. CLAUDE.md updated.
 
 ## Problems
 

@@ -11,7 +11,8 @@ One row per (player_id, season, lg). What the script does:
 2. Joins season tables: totals, advanced, shooting and play-by-play
    (the last two exist from 1996-97 on; earlier seasons get NaN).
 3. Adds career info (birth date, height, weight, Hall of Fame), draft position
-   and season awards (All-Star, All-NBA, All-Defense, award vote shares).
+   and season awards (All-Star, All-NBA, All-Defense, award vote shares), plus
+   hand-entered awards the mirror doesn't have yet (MANUAL_AWARDS, with sources).
 4. Flags the season still in progress (`in_progress`), which must never be
    used as a training target.
 
@@ -34,6 +35,25 @@ OUT_PATH = ROOT / "data" / "processed" / "player_seasons.parquet"
 CURRENT_SEASON = 2027  # 2026-27, in progress when the mirror was downloaded
 KEY = ["player_id", "season", "lg"]
 MULTI_TEAM = r"^\dTM$"  # '2TM', '3TM', ...
+
+# Awards announced after the mirror was last updated (it stops at 2024-25 for
+# vote shares and All-NBA/All-Rookie teams). Entered by hand with sources; a
+# patch is skipped automatically once the mirror contains that award.
+MANUAL_AWARDS = [
+    {
+        # 2025-26 ROY: 56 first-place + 44 second-place votes = 412 points,
+        # out of 500 possible (100 voters, 5-3-1 scoring) -> share 0.824.
+        # https://pr.nba.com/cooper-flagg-2025-26-kia-nba-rookie-of-the-year/
+        "player_id": "flaggco01", "season": 2026, "lg": "NBA",
+        "roy_share": 412 / 500, "roy_won": True,
+    },
+    {
+        # 2025-26 All-Rookie First Team.
+        # https://bleacherreport.com/articles/25429714-cooper-flagg-kon-knueppel-headline-2025-26-nba-all-rookie-team-full-voting-results
+        "player_id": "flaggco01", "season": 2026, "lg": "NBA",
+        "all_rookie_team": 1.0,
+    },
+]
 
 
 def read(name: str) -> pd.DataFrame:
@@ -99,6 +119,26 @@ def season_awards() -> pd.DataFrame:
     return out
 
 
+def apply_manual_awards(df: pd.DataFrame) -> pd.DataFrame:
+    """Fill awards missing from the mirror; never overwrite what the mirror has."""
+    for patch in MANUAL_AWARDS:
+        mask = (
+            (df["player_id"] == patch["player_id"])
+            & (df["season"] == patch["season"])
+            & (df["lg"] == patch["lg"])
+        )
+        assert mask.sum() == 1, f"manual award matches {mask.sum()} rows: {patch}"
+        fields = {k: v for k, v in patch.items() if k not in KEY}
+        for col, value in fields.items():
+            current = df.loc[mask, col].iloc[0]
+            if pd.notna(current) and current not in (0, False):
+                print(f"  manual {col} for {patch['player_id']} {patch['season']}: "
+                      f"mirror already has it ({current}), skipping")
+                continue
+            df.loc[mask, col] = value
+    return df
+
+
 def draft_info() -> pd.DataFrame:
     """Draft year and pick. Players drafted twice keep their latest selection."""
     d = read("Draft Pick History").sort_values("season")
@@ -132,6 +172,7 @@ def main() -> None:
         df[col] = df[col].fillna(False).astype(bool)
     for col in [c for c in awards if c.endswith("_share")]:
         df[col] = df[col].fillna(0.0)
+    df = apply_manual_awards(df)
 
     df = df.copy()  # defragment after the many column-wise merges
     df = df.merge(draft_info(), on="player_id", how="left", validate="m:1")

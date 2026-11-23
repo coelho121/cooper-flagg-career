@@ -34,7 +34,8 @@ I want this to be rich and interesting, not "standard per-season stats and done"
 
 ## Repo rules
 - `data/` is gitignored. Never commit data; scripts in `src/` must regenerate it.
-- Reusable data and cleaning code in `src/` (scripts); exploration and modelling in `notebooks/`.
+- All pipeline logic lives in `src/` modules (data, features, model, backtests, simulation, final figures), each with a `main()`. `main.py` at the root runs the whole pipeline end to end (`python main.py`); add every new step to it.
+- `notebooks/` are only for exploration and presenting results: they import from `src/`, they don't hold logic the pipeline depends on.
 - When installing a package, add it to `requirements.txt`.
 - **I do commits and pushes myself in GitHub Desktop.** Don't run `git commit` or `git push`. When a step is done, suggest a short commit message.
 - Before rewriting a notebook, warn me to close it in VS Code (or "Revert File" afterwards), or VS Code shows a stale version.
