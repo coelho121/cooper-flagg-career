@@ -1,4 +1,4 @@
-""" DDownload the Basketball-Reference Kaggle mirror into data/raw/bref/.
+""" Download the Basketball-Reference Kaggle mirror into data/raw/bref/.
 
 basketball-reference.com blocks scrapers (Cloudflare), so we use the CC0 Kaggle
 dataset "NBA Stats (1947-present)" by Sumitro Datta
